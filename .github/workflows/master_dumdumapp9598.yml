@@ -1,0 +1,35 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - dumdumapp9598
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@master
+
+    - uses: azure/docker-login@v1
+      with:
+        login-server: https://appreg9598.azurecr.io/
+        username: ${{ secrets.AzureAppService_ContainerUsername_cc9e5e6b89234018acc732f6f96a3e92 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_e835a15283374469a0784c7ada56ee19 }}
+
+    - run: |
+        docker build . -t appreg9598.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_cc9e5e6b89234018acc732f6f96a3e92 }}/dotnetapp:${{ github.sha }}
+        docker push appreg9598.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_cc9e5e6b89234018acc732f6f96a3e92 }}/dotnetapp:${{ github.sha }}
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'dumdumapp9598'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_cc45754a3f2c43f4b9b83c95f6b6d2b8 }}
+        images: 'appreg9598.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_cc9e5e6b89234018acc732f6f96a3e92 }}/dotnetapp:${{ github.sha }}'
